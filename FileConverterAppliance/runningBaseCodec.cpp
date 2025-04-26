@@ -77,23 +77,28 @@ std::string base64Codec::encodeByteBlock(const uint8_t* block, size_t len)
 	return outputMani.returnStr();
 }
 
-void base64Codec::decodeByteBlock(const uint8_t* block, size_t len, uint8_t* OUT_outputVal, size_t out_len, bool recountBase)
+void base64Codec::decodeByteBlock(const uint8_t* block, size_t len, std::shared_ptr<uint8_t[]>& OUT_outputVal, size_t out_len, bool recountBase /* = false */)
 {
-	size_t localLen = len; //localLen replaces len
-	if (recountBase) {
-		localLen = 0;
-		for (size_t i = 0; i < len; i++) {
-			for (uint8_t in = 0; in < Charidx; in++) {
-				if (block[i] == tableOfContents[in]) {
-					localLen++;
-					break;
-				}
-			}
-		}
-	}
+   size_t localLen = len; //localLen replaces len
+   if (recountBase) {
+       localLen = 0;
+       for (size_t i = 0; i < len; i++) {
+           if (block[i] == '=') {
+               localLen++;
+               break;
+           }
+           for (uint8_t in = 0; in < Charidx; in++) {
+               if (block[i] == tableOfContents[in]) {
+                   localLen++;
+                   break;
+               }
+           }
+       }
+   }
 
-	size_t assumedmaxOutLen = estimate_baseToBin_Size(localLen);
-	//TODO: decode
+   size_t assumedmaxOutLen = base64Codec::estimate_baseToBin_Size(localLen);
+   OUT_outputVal = std::shared_ptr<uint8_t[]>(new uint8_t[assumedmaxOutLen]);
+   //TODO: decode
 }
 
 size_t base64Codec::estimate_baseToBin_Size(size_t size)
